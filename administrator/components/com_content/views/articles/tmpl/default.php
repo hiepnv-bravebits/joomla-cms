@@ -126,7 +126,14 @@ JHtml::_('dropdown.init');
 				<tfoot>
 					<tr>
 						<td colspan="15">
-							<?php echo $this->pagination->getListFooter(); ?>
+							<div class="pull-left">
+								<?php echo $this->pagination->getListFooter(); ?>
+							</div>
+							<div class="pull-left" >								
+								<div class="pagination-list limit-box">
+								<?php echo $this->pagination->getLimitBox(); ?>
+								</div>
+							</div>				
 						</td>
 					</tr>
 				</tfoot>

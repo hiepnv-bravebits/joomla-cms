@@ -428,3 +428,9 @@ fieldset.radio.btn-group {
 .input-prepend .chzn-container-single .chzn-drop{
 	border-color: #CCC;
 }
+
+/* Pagination */
+.pagination-list.limit-box {
+	margin-top: 28px;
+	margin-left: 6px;
+}

@@ -76,25 +76,53 @@ function pagination_list_footer($list)
 
 function pagination_list_render($list)
 {
+	//calculate to display range of pages
+	$currentPage = 1;
+	$range = 1;
+	$step  = 5;
+	foreach ($list['pages'] as $k=>$page) {
+		if (!$page['active']) {
+			$currentPage = $k;
+		} 		
+	}
+	if($currentPage >= $step ){
+		if($currentPage % $step == 0){
+			$range = ceil($currentPage/$step) + 1;
+		}else{
+			$range = ceil($currentPage/$step);
+		}		
+	}
+	
 	// Initialize variables
 	$html = "<ul class=\"pagination-list\">";
-	$html .= '<li><a>&larr;</a></li>'.$list['start']['data'];
+			
+	$list['start']['data'] = preg_replace('#(<a.*?>).*?(</a>)#', '$1<span class="icon-fast-backward"></span>$2', $list['start']['data']);
+	$list['previous']['data'] = preg_replace('#(<a.*?>).*?(</a>)#', '$1<span class="icon-step-backward"></span>$2', $list['previous']['data']);
+	
+	$html .= $list['start']['data'];
 	$html .= $list['previous']['data'];
-
-	foreach( $list['pages'] as $page )
+	foreach( $list['pages'] as $k=>$page )
 	{
 		if($page['data']['active']) {
 		}
-
-		$html .= $page['data'];
-
-		if($page['data']['active']) {
+		
+		if (in_array($k, range($range * $step - ($step + 1), $range*$step))){
+			if(($k % $step == 0 || $k == $range * $step - ($step + 1)) && $k != $currentPage && $k != $range * $step - $step ){
+				$page['data'] = preg_replace('#(<a.*?>).*?(</a>)#', '$1...$2', $page['data']);
+			}
+			
+			$html .= $page['data'];			
+		}
+				if($page['data']['active']) {
 		}
 	}
 
+	$list['next']['data'] = preg_replace('#(<a.*?>).*?(</a>)#', '$1<span class="icon-step-forward"></span>$2', $list['next']['data']);
+	$list['end']['data'] = preg_replace('#(<a.*?>).*?(</a>)#', '$1<span class="icon-fast-forward"></span>$2', $list['end']['data']);
+	
+	
 	$html .= $list['next']['data'];
-	$html .= $list['end']['data'];
-	$html .= '<li><a>&rarr;</a></li>';
+	$html .= $list['end']['data'];	
 
 	$html .= "</ul>";
 	return $html;
