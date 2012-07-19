@@ -18,6 +18,10 @@ $userId		= $user->get('id');
 $listOrder	= $this->escape($this->state->get('list.ordering'));
 $listDirn	= $this->escape($this->state->get('list.direction'));
 $saveOrder	= $listOrder == 'a.ordering';
+if($saveOrder) {
+	$saveOrderingUrl = 'index.php?option=com_content&task=articles.saveOrderAjax&tmpl=component';
+	JHtml::_('sortablelist.sortable', 'articleList', 'adminForm', strtolower($listDirn), $saveOrderingUrl);	
+}
 ?>
 <form action="<?php echo JRoute::_('index.php?option=com_content&view=articles');?>" method="post" name="adminForm" id="adminForm">
 	<div class="row-fluid">
@@ -83,24 +87,21 @@ $saveOrder	= $listOrder == 'a.ordering';
 			</div>
 			<div class="clearfix"> </div>
 			
-			<table class="table table-striped">
+			<table class="table table-striped" id="articleList">
 				<thead>
 					<tr>
 						<th width="1%">
 							<input type="checkbox" name="checkall-toggle" value="" title="<?php echo JText::_('JGLOBAL_CHECK_ALL'); ?>" onclick="Joomla.checkAll(this)" />
 						</th>
+						<th width="5%" class="center" style="min-width:70px">
+							<?php echo JHtml::_('grid.sort',  'JGRID_HEADING_ORDERING', 'a.ordering', $listDirn, $listOrder); ?>							
+						</th>
+						<th width="5%" style="min-width:55px" class="center">
+							<?php echo JText::_('JSTATUS'); ?>
+						</th>
 						<th>
 							<?php echo JHtml::_('grid.sort', 'JGLOBAL_TITLE', 'a.title', $listDirn, $listOrder); ?>
-						</th>
-						<th width="5%">
-							<?php echo JHtml::_('grid.sort', 'JFEATURED', 'a.featured', $listDirn, $listOrder, NULL, 'desc'); ?>
-						</th>
-						<th width="12%">
-							<?php echo JHtml::_('grid.sort',  'JGRID_HEADING_ORDERING', 'a.ordering', $listDirn, $listOrder); ?>
-							<?php if ($saveOrder) :?>
-								<?php echo JHtml::_('grid.order',  $this->items, 'filesave.png', 'articles.saveorder'); ?>
-							<?php endif; ?>
-						</th>
+						</th>												
 						<th width="10%">
 							<?php echo JHtml::_('grid.sort', 'JGRID_HEADING_ACCESS', 'access_level', $listDirn, $listOrder); ?>
 						</th>
@@ -135,15 +136,41 @@ $saveOrder	= $listOrder == 'a.ordering';
 					$canEditOwn	= $user->authorise('core.edit.own',		'com_content.article.'.$item->id) && $item->created_by == $userId;
 					$canChange	= $user->authorise('core.edit.state',	'com_content.article.'.$item->id) && $canCheckin;
 					?>
-					<tr class="row<?php echo $i % 2; ?>">
+					<tr class="row<?php echo $i % 2; ?>" sortable-group-id="<?php echo $item->catid?>"> 
 						<td class="center">
 							<?php echo JHtml::_('grid.id', $i, $item->id); ?>
+						</td>
+						<td class="order nowrap center">             
+							<?php if ($canChange) : ?>
+								
+									<?php 
+										$disableClassName = '';
+										$disabledLabel	  = '';	
+										if (!$saveOrder) {
+										$disabledLabel 		= JText::_('JORDERINGDISABLED');
+										$disableClassName 	= 'inactive tip-top';
+									}
+									?>				
+									<span class="sortable-handler <?php echo $disableClassName?>" title="<?php echo $disabledLabel?>">
+										<i class="icon-move"></i>
+									</span>					
+									<input type="text" style="display:none"  name="order[]" size="5" 
+									value="<?php echo $item->ordering;?>"  class="width-20 text-area-order " />
+							<?php else:?>
+							<span class="sortable-handler inactive" >
+								<i class="icon-move"></i>
+							</span>								
+							<?php endif; ?>
+								
+						</td>
+						<td class="center">							
+							<?php echo JHtml::_('contentadministrator.featured', $item->featured, $i, $canChange); ?>
+							<?php echo JHtml::_('jgrid.published', $item->state, $i, 'articles.', $canChange, 'cb', $item->publish_up, $item->publish_down); ?>
 						</td>
 						<td class="nowrap">
 							<?php if ($item->checked_out) : ?>
 								<?php echo JHtml::_('jgrid.checkedout', $i, $item->editor, $item->checked_out_time, 'articles.', $canCheckin); ?>
-							<?php endif; ?>
-							<?php echo JHtml::_('jgrid.published', $item->state, $i, 'articles.', $canChange, 'cb', $item->publish_up, $item->publish_down); ?>
+							<?php endif; ?>							
 							<?php if ($item->language=='*'):?>
 								<?php $language = JText::alt('JALL', 'language'); ?>
 							<?php else:?>
@@ -159,10 +186,8 @@ $saveOrder	= $listOrder == 'a.ordering';
 								<?php echo JText::_('JCATEGORY') . ": " . $this->escape($item->category_title); ?>
 							</div>
 						</td>
-						<td class="center">
-							<?php echo JHtml::_('contentadministrator.featured', $item->featured, $i, $canChange); ?>
-						</td>
-						<td class="order nowrap">             
+						
+						<!--<td class="order nowrap">             
 							<?php if ($canChange) : ?>
 								<div class="input-prepend">
 									<?php if ($saveOrder) :?>
@@ -179,7 +204,7 @@ $saveOrder	= $listOrder == 'a.ordering';
 								<?php echo $item->ordering; ?>
 							<?php endif; ?>
 						</td>
-						<td class="small">
+						--><td class="small">
 							<?php echo $this->escape($item->access_level); ?>
 						</td>
 						<td class="small">

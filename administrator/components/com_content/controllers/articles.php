@@ -98,4 +98,30 @@ class ContentControllerArticles extends JControllerAdmin
 
 		return $model;
 	}
+	
+	/**
+	 * Save order for articles, use for ajax call.
+	 *
+	 * @return	void 
+	 */
+	public function saveOrderAjax()
+	{
+		// Get the input
+		$pks = JRequest::getVar('cid', null, 'post', 'array');
+		$order = JRequest::getVar('order', null, 'post', 'array');		
+		// Sanitize the input
+		JArrayHelper::toInteger($pks);
+		JArrayHelper::toInteger($order);
+
+		// Get the model
+		$model = $this->getModel();
+
+		// Save the ordering
+		$return = $model->saveorder($pks, $order);
+		
+		if($return){
+			echo "1";			
+		}
+		jexit();	
+	}
 }
